@@ -1,0 +1,115 @@
+#include <Servo.h>
+#include <BH1750.h>
+#include <Wire.h>
+int pos51 = 90;
+int pos52 = 90;
+int pos51i = 90;
+int pos52i = 90;
+int incomingByte = 0;
+int currentPos51;
+int currentPos52;
+int lux = 0;
+Servo servo1;
+Servo servo2;
+BH1750 lightMeter;
+void setup() {
+// put your setup code here, to run once:
+Serial.begin(9600);
+Serial.println("Carregando código do Arduíno");
+lightMeter.begin();
+servo1.attach(9);
+servo1.write(pos51i);
+servo1.attach(10);
+servo1.write(pos52i);
+
+}
+void loop() {
+// put your main code here, to run repeatedly:
+uint16_t lux = lightMeter.readLightLevel();
+delay(1000);
+
+if (Serial.available()>0){
+incomingByte = Serial.read();
+Serial.print("I received: ");
+Serial.println(incomingByte, DEC);
+switch(incomingByte){
+case 97:
+if(pos51 > 180){
+
+66
+
+pos51=170;
+}
+pos51 += 1;
+servo1.write(pos51);
+currentPos51 = servo1.read();
+Serial.print("51 current position: ");
+Serial.println(currentPos51);
+Serial.print("Luminosidade: ");
+Serial.print(lux);
+Serial.println(" lux");
+break;
+case 100:
+if(pos51 < 0){
+pos51=10;
+}
+pos51
+-= 1;
+servo1.write(pos51);
+currentPos51 = servo1.read();
+Serial.print("51 current position: ");
+Serial.println(currentPos51);
+Serial.print("Luminosidade: ");
+Serial.print(lux);
+Serial.println(" lux");
+break;
+case 115:
+if(pos52 > 180){
+pos52=170;
+}
+pos52 += 1;
+servo2.write(pos52);
+currentPos52 = servo2.read();
+Serial.print("52 current position: ");
+Serial.println(currentPos52);
+Serial.print("Luminosidade: ");
+Serial.print(lux);
+Serial.println(" lux");
+break;
+case 119:
+if(pos52 < 0){
+pos52=10;
+}
+pos52
+-= 1;
+servo2.write(pos52);
+currentPos52 = servo2.read();
+Serial.print("52 current position: ");
+Serial.println(currentPos52);
+Serial.print("Luminosidade: ");
+
+67
+
+Serial.print(lux);
+Serial.println(" lux");
+break;
+case 120:
+Serial.println ("Reset servo to default position");
+servo1.write(pos51i);
+servo1.write(pos52i);
+pos51 = 90;
+pos52 = 90;
+break;
+default:
+incomingByte = 0;
+}
+Serial.print("51 Current position required: ");
+Serial.println(pos51);
+Serial.print("52 Current position required: ");
+Serial.println(pos52);
+incomingByte = 0;
+}
+Serial.print("Luminosidade: ");
+Serial.print(lux);
+Serial.println(" lux");
+}
