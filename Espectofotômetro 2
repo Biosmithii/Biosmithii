@@ -1,0 +1,61 @@
+#include <Stepper.h>
+#include <BH1750FVI.h> //biblioteca do sendor de luz.
+#include <Wire.h>
+#include <SD.h>
+BH1750FVI LightSensor;//variavel do sensor de luz.
+File myFile;//variavel para salvar os dados.
+//motor de passo nos pinos 2, 5, 6 e 7
+Stepper stepper(200, 2, 5, 6, 7);//passos para uma volta completa.
+float cont=0;//contador para computar os passos.
+void setup()
+{
+Serial.begin(9600);
+//inicia sensor de luz.
+LightSensor.begin();
+LightSensor.SetAddress(Device_Address_H);//address 0x5C
+LightSensor.SetMode(Continuous_H_resolution_Mode2);//para uma
+melhor resolucao.
+//inicia o cartao SD.
+Serial.println("Iniciando cartao SD...");
+pinMode(10, OUTPUT);
+if (!SD.begin(4)) {
+Serial.println("Falha na iniciacao!");
+return;
+}
+Serial.println("Inicializacao concluida.");
+//criacao do arquivo.
+myFile = SD.open("dadosluz.txt", FILE_WRITE);
+//se o arquivo estiver corretor, comeca a gravar os dados:
+if (myFile) {
+Serial.println("Iniciando as medidas...");
+Serial.println("passos lux");
+myFile.println("passos lux");
+delay(5000);//tempo para iniciar a coleta de dados.
+cont=1;
+while(cont <= 52)
+{
+uint16_t lux = LightSensor.GetLightIntensity();//recebe a intensidade de
+luz em lux.
+stepper.setSpeed(10);//velocidade da varredura.
+stepper.step(-5);//tamanho dos passos (precisao das medidas).
+//sendo 260 e o tamanho maximo do percurso da amostra
+//imprime dados no monitor serial.
+Serial.print(cont );
+Serial.print(" ");
+Serial.println(lux);
+//salva dados no cartao.
+myFile.print(cont);
+myFile.print(" ");
+myFile.println(lux);
+cont = cont + 1;//incrementa o contador.
+delay(1000);//tempo entre as medidas (1000=1s), quanto maior mais
+lento!
+}
+myFile.close();//fecha o arquivo.
+Serial.println("Fim das medidas.");
+stepper.setSpeed(60);
+stepper.step(260);}
+else {
+//se o arquivo nao abrir, imprime a mensagem de erro:
+Serial.println("Erro na abertura de dadosluz.txt");
+} }
